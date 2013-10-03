@@ -11,7 +11,34 @@
 |
 */
 
-Route::get('/', function()
+
+ Route::group(array('prefix' => LaravelLocalization::setLanguage() ), function()
 {
-	return View::make('hello');
+        /** ADD ALL LOCALIZED ROUTES INSIDE THIS GROUP **/
+        Route::get('/', function()
+        {
+            return View::make('hello');
+        });
+
+        Route::get('test',function(){
+            return View::make('test');
+        });
+
+        // ADD ROUTE FOR MEMBER LOGIN & REGISTERATION 
+        Route::get('user/login', array('uses' => 'AuthController@getlogin' , 'as' => 'user.login'));
+        Route::get('user/logout', array('uses' => 'AuthController@getlogout' , 'as' => 'user.logout'));
+        Route::post('user/login', array('uses' => 'AuthController@postlogin' , 'as' => 'user.postlogin'));
+
+        // ADD ROUTE FOR AUTHENCIATED USER INSIDE THIS group
+        Route::group(array('before' => 'sentry'),function(){
+            Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
+        });
+        
 });
+
+/** OTHER PAGES THAT SHOULD NOT BE LOCALIZED **/
+
+// Route::get('/', function()
+// {
+//  return View::make('hello');
+// });

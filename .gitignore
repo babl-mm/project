@@ -3,3 +3,12 @@
 composer.phar
 composer.lock
 .DS_Store
+/public/fonts/LITHE.TTF
+/public/fonts/LITHEB.TTF
+/public/fonts/LITHEXB.TTF
+/public/fonts/glyphicons-halflings-regular.eot
+/public/fonts/glyphicons-halflings-regular.svg
+/public/fonts/glyphicons-halflings-regular.ttf
+/public/fonts/glyphicons-halflings-regular.woff
+/public/img/ico_facebook.png
+/public/img/logo_beeticket.png

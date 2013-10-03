@@ -6,7 +6,8 @@
 	"require": {
 		"laravel/framework": "4.0.*",
 		"way/generators": "dev-master",
-		"cartalyst/sentry": "2.0.*"
+		"cartalyst/sentry": "2.0.*",
+		"mcamara/laravel-localization": "dev-master"
 	},
 	"minimum-stability" : "dev",
 	"autoload": {

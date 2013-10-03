@@ -60,6 +60,16 @@ Route::filter('guest', function()
 	if (Auth::check()) return Redirect::to('/');
 });
 
+/* 
+|------------------------------------
+|  Sentry Filter 
+|---------------------------------------
+*/
+
+Route::filter('sentry', function()
+{
+	if (! Sentry::check() ) return Redirect::to('user/login')->withErrors(array('login'=>'You are not authorized for this page','msg'=>'Please first login here !'));
+});
 /*
 |--------------------------------------------------------------------------
 | CSRF Protection Filter
