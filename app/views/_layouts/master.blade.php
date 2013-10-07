@@ -8,24 +8,15 @@
 	<link rel="shortcut icon" href="../../assets/ico/favicon.png">
 	<link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" type="text/css" media="all" >
 	<link rel="stylesheet" type="text/css" href="{{ asset('css/style.css') }}" media="screen,projection">   
+ 
 @show
 	<!-- Header -->
  </head>
  <body>
+ @section ('nav') <!-- Section Nav-top -->
+ @show
  <div class="container">
  <div class="row" >
- @section ('nav') <!-- Section Nav-top -->
-      <div class="col-md-12" id="pg_login"> 
-        <div class="navbar navbar-inverse navbar-fixed-top">      
-        <div id="navbar-header" >
-        <div class="container">
-          <h1>{{ trans('siteinfo.brandname') }}</h1>
-        </div>
-         </div>      
-      </div>
-      </div>
-@show
-<br/>
  @yield('content')  <!-- Content -->
 
  </div> <!-- End of Row -->

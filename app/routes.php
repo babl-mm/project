@@ -29,9 +29,21 @@
         Route::get('user/logout', array('uses' => 'AuthController@getlogout' , 'as' => 'user.logout'));
         Route::post('user/login', array('uses' => 'AuthController@postlogin' , 'as' => 'user.postlogin'));
 
+
+        // ADD ROUTE FOR MEMBER REGISTERATION
+        Route::get('user/register', array('uses' => 'AuthController@getRegister' , 'as' => 'user.register'));
+        Route::post('user/register', array('uses' => 'AuthController@postRegister' , 'as' => 'user.postreg'));
+        
+
+        // Actiave Route Controller
+        Route::get('user/activate/{userId}/{activationCode}', 'AuthController@getActivate');
+        
         // ADD ROUTE FOR AUTHENCIATED USER INSIDE THIS group
         Route::group(array('before' => 'sentry'),function(){
-            Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
+
+        Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
+        
+
         });
         
 });

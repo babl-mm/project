@@ -68,7 +68,7 @@ Route::filter('guest', function()
 
 Route::filter('sentry', function()
 {
-	if (! Sentry::check() ) return Redirect::to('user/login')->withErrors(array('login'=>'You are not authorized for this page','msg'=>'Please first login here !'));
+	if (! Sentry::check() ) return Redirect::to('user/login')->withErrors(array('login'=>'You must be logged in to perform that action','msg'=>'Please first login here !'));
 });
 /*
 |--------------------------------------------------------------------------
