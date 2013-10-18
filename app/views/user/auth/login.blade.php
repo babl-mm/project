@@ -1,14 +1,16 @@
-@extends('_layouts.master')
-@section('nav')
-    @include('_layouts.loginavi')
+@extends('_layouts.master.login')
+@section('navi')
+    @include('_layouts.navi.loginavi')
 @stop
 @section('content')
+<div class="container">
+<div class="row">
       <div class="col-md-12">
          {{ Form::open(array('method'=>'post'))}}
          <!-- Notification -->
          @include('notifications')
 
-          <div class="form-group">
+          <div class="form-group {{ (Session::get('errors') ? 'has-error' : '') }}">
               <label for="email">{{ trans('memberlogin.email') }}</label>
            {{ Form::text('email', Input::old('email', ''), array('class' =>'form-control','placeholder' => 'Email address')) }}
               <label for="password">{{ trans('memberlogin.password') }}</label>
@@ -28,4 +30,6 @@
          
        {{ Form::close() }}
       </div> <!-- End of Grid -->
+      </div> <!-- / of Row -->
+</div><!--  End of Container -->
 @stop

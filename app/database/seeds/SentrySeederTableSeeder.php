@@ -25,7 +25,7 @@ class SentrySeederTableSeeder extends Seeder {
 				'first_name'=> 'Mg Mg',
 				'last_name' => 'Thiha',
 				'phoneno' => '959420057168',
-				'dob' => '1991/12/20',
+				'dob' => '12-20',
 				'address' => 'No 164 Anawyahtar Road',
 				'city' => 'Yangon',
 				'gender' => 'Male',

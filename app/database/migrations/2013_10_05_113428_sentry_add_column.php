@@ -13,7 +13,7 @@ class SentryAddColumn extends Migration {
 	{
 		Schema::table('users', function($table) {
 			 $table->string('phoneno');
-			 $table->date('dob');
+			 $table->string('dob','5');
 			 $table->string('address');
 			 $table->string('gender','6');
 			 $table->string('city');

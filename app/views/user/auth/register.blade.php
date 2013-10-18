@@ -1,24 +1,29 @@
-@extends('_layouts.master')
+@extends('_layouts.master.login')
 @section('head') @parent
    <link rel="stylesheet" type="text/css" href="{{ asset('css/chosen/chosen.min.css') }}" media="screen,projection">   
 @stop
-@section('nav')
-    @include('_layouts.regnavi')
+@section('navi')
+    @include('_layouts.navi.regnavi')
 @stop
 @section('content')
+<div class="container">
+<div class="row">
 <div class="col-md-12">
 <h3 class="form-legend">User Registration</h3>
           {{ Form::open(array('method'=>'post'))}}
          <!-- Notification -->
          @include('notifications')
 
-          <div class="form-group">  
-            <div class="form-group">
+        
+            <div class="form-group {{ (Session::get('errors') ? 'has-error' : '') }}">
                   <label for="email">Email</label>
                   {{ Form::email('email', Input::old('email', ''), array('class' =>'form-control','placeholder' => 'Email address')) }}
                
                   <label for="password">Password</label>
                   {{ Form::password('password', array('class' =>'form-control','placeholder' => 'Password')) }}
+
+                      <label for="confirmpassword">Confirm Password</label>
+                  {{ Form::password('password_confirmation', array('class' =>'form-control','placeholder' => 'Confirm Password')) }}
 
                   <label for="First Name">First name</label>
                   {{ Form::text('firstname', Input::old('firstname', ''), array('class' =>'form-control','placeholder' => 'First Name')) }}
@@ -30,7 +35,18 @@
                    {{ Form::text('phone', Input::old('phone', ''), array('class' =>'form-control','placeholder' => 'Phone no')) }}
                   
                    <label for="">Date of Birth</label>
-                   {{ Form::text('dob', Input::old('dob', ''), array('class' =>'form-control','placeholder' => 'DD/MM/YY')) }}
+              
+                   <div class="" id="dob"> 
+                    <ul>
+                      <li>
+                    {{ Form::select('dob_month', $dobmonth,'0',array('class' =>'form-control'))}}
+                      </li> 
+                      <li>
+                    {{ Form::select('dob_day', $dobday,'0',array('class' =>'form-control'))}}
+                      </li>
+                                     
+                    </ul>
+                  </div>
 
                    <label for="Address">Address</label>
                    {{ Form::textarea('address', Input::old('address', ''), array('class' =>'form-control','placeholder' => 'Address' ,'rows'=>'3')) }}
@@ -58,7 +74,7 @@
                         'koko1' => 'Pakyoke ku',
                     ),'',array('class' =>'form-control chosen-select-no-single' ,'data-placeholder' => 'Your Favorite Type of Bear'))}}
 
-              </div>
+              <br/>
               <br/>
                <p>
 
@@ -69,7 +85,8 @@
               </p>
    
           </div>
-        </form> 
-      </div>
-
+            {{ Form::close() }}
+      </div> <!-- / Column 12 -->
+</div><!--  / of Row -->
+</div><!--  End of Container -->
 @stop

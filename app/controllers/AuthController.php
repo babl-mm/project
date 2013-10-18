@@ -66,10 +66,17 @@ class AuthController extends \BaseController {
 			try 
 			{
 				$user =	Sentry::authenticate($credentials, false);
-				if($user)
-				{
-					return Redirect::to('user/profile');
-				}
+				// if($user)
+				// {
+					if($user->hasAccess('admin'))
+					{
+						return Redirect::to('/');
+					}
+					else
+					{
+						return Redirect::to('user/profile');
+					}
+				// }
 			} 
 			catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
 			{
@@ -82,7 +89,7 @@ class AuthController extends \BaseController {
 			}
 			catch (Cartalyst\Sentry\Users\UserNotActivatedException $e)
 			{
-			    Session::flash('error', 'You have not yet activated this account. <a href="/users/resend">Resend actiavtion?</a>');
+			    Session::flash('error', 'You have not yet activated this account. <a href="/user/resend">Resend actiavtion?</a>');
 				return Redirect::to('user/login')->withInput();;
 			}
 
@@ -107,7 +114,7 @@ class AuthController extends \BaseController {
 	 */
 	public function profile()
 	{
-		 $user = Sentry::getUser();
+		$user = Sentry::getUser();
 		return View::make('user.profile.index')->with('user',$user);
 	}
 	/**
@@ -129,9 +136,31 @@ class AuthController extends \BaseController {
 	 */
 	public function getRegister()
 	{
-		return View::make('user.auth.register');
+		$dobday = $this->getDay();
+		$dobmonth = $this->getMonth();
+		
+		return View::make('user.auth.register')->with('dobday',$dobday)->with('dobmonth',$dobmonth);
 	}
 
+	public function getDay()
+	{
+		$day= array();
+		$day[0] = "Choose Day ~";
+
+		for ($i=1; $i <= 31; $i++) { 
+			$day[]= $i;
+		}
+		return $day;
+	}
+
+	public function getMonth()
+	{
+		$month= array('Choose Month ~','January','Febuary','March','April','May','June','July','August'
+					 ,'September','October','November','December');
+	
+		return $month;
+	}
+	
 	/**
 	 * Post Registration Form
 	 *
@@ -139,49 +168,73 @@ class AuthController extends \BaseController {
 	 */
 	public function postRegister()
 	{
-		$credentials = array(
-			 'email' 		=> Input::get('email')  ,
-			 'password' 	=> Input::get('password') ,
-			 'first_name' 	=> Input::get('firstname'),
-			 'last_name'	=> Input::get('lastname') ,
-			 'phoneno' 		=> Input::get('phone'),
-			 'dob' 			=> Input::get('dob') ,
-			 'address' 		=> Input::get('address') ,
-			 'gender' 		=> Input::get('gender'),
-			 'city' 		=> Input::get('city')	
+		$myday = array();
+		for ($i = 1; $i <= 31 ; $i++) { 
+			$myday[$i] = $i;
+		}
+		$rules = array(
+			 'email' 		=> 'Required|Between:3,64|Email' ,
+			 'password' 	=> 'Required|AlphaNum|Between:4,26|Confirmed',
+			 'password_confirmation' => 'Required|AlphaNum|Between:4,26',
+			 'firstname' 	=> 'Required',
+			 'lastname'		=> 'Required',
+			 'dob_day' 		=> 'Required|in:'.implode(',', $myday),
+			 'dob_month' 	=> 'Required|in:1,2,3,4,5,6,7,8,9,10,11,12',
+			 'phone' 		=> 'Required|Numeric',
+			 'address' 		=> 'Required',
+			 'gender' 		=> 'Required',
+			 'city' 		=> 'Required'
 		);
 
-		$rules = array(
-			 'email' 		=> 'required|email' ,
-			 'password' 	=> 'required',
-			 'first_name' 	=> 'required',
-			 'last_name'	=> 'required',
-			 'dob' 			=> 'required',
-			 'phoneno' 		=> 'required',
-			 'address' 		=> 'required',
-			 'gender' 		=> 'required',
-			 'city' 		=> 'required'
-		);
-		$validator = Validator::make($credentials, $rules);	
-		if($validator->fails())
-		{
+
+		$validator = Validator::make(Input::all(), $rules);	
+		
+		if($validator->fails()){
+
 			return Redirect::to('user/register')->withErrors($validator->messages())->withInput();
 
 		}
 		else{
 			try {
+
+				$credentials = array(
+				 'email' 		=> Input::get('email')  ,
+				 'password' 	=> Input::get('password') ,
+				 'first_name' 	=> Input::get('firstname'),
+				 'last_name'	=> Input::get('lastname') ,
+				 'phoneno' 		=> Input::get('phone'),
+				 'dob' 			=> Input::get('dob_month') . '-' . Input::get('dob_day'),
+				 'address' 		=> Input::get('address') ,
+				 'gender' 		=> Input::get('gender'),
+				 'city' 		=> Input::get('city') ,
+				 'imageurl' 	=> 'img/profile/sample_profile.jpg'	
+			   );
+
 				$user = Sentry::register($credentials);
-				$code= $user->GetActivationCode();
-				return View::make('testing')->with('code',$code)->with('userid',$user->getId());
+				$data['activationCode']= $user->GetActivationCode();
+				$data['email']= $credentials['email'];
+				$data['userId']= $user->getId();
+				
+				//send email with link to activate.
+				Mail::send('emails.auth.welcome', $data, function($mail) use($data)
+				{
+				    $mail->to($data['email'])->subject('Welcome to Beeticket Registration');
+				});
+				
+				Session::flash('success', 'Your account has been created. Check your email for the confirmation link.');
+		    	
+		    	return Redirect::to('user/login');
 			} 
 			catch (Cartalyst\Sentry\Users\LoginRequiredException $e)
 			{
 			    Session::flash('error', 'Login field required.');
+			    
 			    return Redirect::to('user/register')->withInput();
 			}
 			catch (Cartalyst\Sentry\Users\UserExistsException $e)
 			{
 			    Session::flash('error', 'User already exists. Please choose another email address');
+			   
 			    return Redirect::to('user/register')->withInput();
 			}
 		}
@@ -203,7 +256,6 @@ class AuthController extends \BaseController {
 		    if ($user->attemptActivation($activationCode))
 		    {
 		        // User activation passed
-		        
 		    	//Add this person to the user group. 
 		    	$userGroup = Sentry::getGroupProvider()->findById(1);
 		    	$user->addGroup($userGroup);
@@ -227,5 +279,89 @@ class AuthController extends \BaseController {
 		    Session::flash('error', 'You have already activated this account.');
 			return Redirect::to('user/login');
 		}
+	}
+
+		/**
+	 * Show the 'Resend Activation' Form
+	 * @return View
+	 */
+	public function getResend()
+	{
+		//Show the Resend Activation Form
+		return View::make('user.resend');
+	}
+
+	/**
+	 * Process Resend Activation Request
+	 * @return View
+	 */
+	public function postResend()
+	{
+
+		// Gather Sanitized Input
+		$input = array(
+			'email' => Input::get('email')
+			);
+
+		// Set Validation Rules
+		$rules = array (
+			'email' => 'required|min:4|max:32|email'
+			);
+
+		//Run input validation
+		$v = Validator::make($input, $rules);
+
+		if ($v->fails())
+		{
+			// Validation has failed
+			return Redirect::to('user/resend')->withErrors($v)->withInput();
+		}
+		else 
+		{
+
+			try {
+				//Attempt to find the user. 
+				$user = Sentry::getUserProvider()->findByLogin(Input::get('email'));
+
+
+				if (!$user->isActivated())
+				{
+					//Get the activation code & prep data for email
+					$data['activationCode'] = $user->GetActivationCode();
+					$data['email'] = $input['email'];
+					$data['userId'] = $user->getId();
+
+							//send email with link to activate.
+					Mail::send('emails.auth.welcome', $data, function($mail) use($data)
+					{
+					    $mail->to($data['email'])->subject('Welcome to Beeticket Registration');
+					});
+
+					//success!
+			    	Session::flash('success', 'Check your email for the confirmation link.');
+			    	return Redirect::to('/');
+				}
+				else 
+				{
+					Session::flash('error', 'That account has already been activated.');
+			    	return Redirect::to('/');
+				}
+
+			}
+			catch (Cartalyst\Sentry\Users\LoginRequiredException $e)
+			{
+			    Session::flash('error', 'Login field required.');
+			    return Redirect::to('user/resend')->withErrors($v)->withInput();
+			}
+			catch (Cartalyst\Sentry\Users\UserExistsException $e)
+			{
+			    Session::flash('error', 'User already exists.');
+			    return Redirect::to('user/resend')->withErrors($v)->withInput();
+			}
+
+
+		}
+
+
 	}
 }

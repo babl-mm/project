@@ -7,15 +7,17 @@
         </p>     
         </div>    
 </div> <!-- End of Footer -->     
-<div class="footer">
-	
-</div>
+
 <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-<script src="{{ asset('js/jquery.js') }}"></script>
-<script src="{{ asset('js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('js/chosen.jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/lib/jquery.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/boostrap/bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/chosen/chosen.jquery.min.js') }}"></script>
+
+<script type="text/javascript" src="{{ asset('js/sidebar/modernizr.custom.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/sidebar/classie.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/sidebar/sidebarEffects.js') }}"></script>
   <script type="text/javascript">
     
   var config = {

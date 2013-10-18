@@ -116,6 +116,7 @@ return array(
 		'Way\Generators\GeneratorsServiceProvider',
 		'Cartalyst\Sentry\SentryServiceProvider',
 		'Mcamara\LaravelLocalization\LaravelLocalizationServiceProvider',
+		'Intervention\Image\ImageServiceProvider',
 	),
 
 	/*
@@ -182,6 +183,7 @@ return array(
 		'View'            => 'Illuminate\Support\Facades\View',
 		'Sentry'		  => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
 		'LaravelLocalization'   => 'Mcamara\LaravelLocalization\Facades\LaravelLocalization',
+		'Image' => 'Intervention\Image\Facades\Image',
 	
 	),
 

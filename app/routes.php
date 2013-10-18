@@ -17,11 +17,8 @@
         /** ADD ALL LOCALIZED ROUTES INSIDE THIS GROUP **/
         Route::get('/', function()
         {
-            return View::make('hello');
-        });
-
-        Route::get('test',function(){
-            return View::make('test');
+            //return View::make('hello');
+            return Redirect::route('user.login');
         });
 
         // ADD ROUTE FOR MEMBER LOGIN & REGISTERATION 
@@ -38,14 +35,29 @@
         // Actiave Route Controller
         Route::get('user/activate/{userId}/{activationCode}', 'AuthController@getActivate');
         
+        // Actiave Route Controller
+        Route::get('user/resend',  'AuthController@getResend');
+        Route::post('user/resend', 'AuthController@postResend');
+
+        
+
+
         // ADD ROUTE FOR AUTHENCIATED USER INSIDE THIS group
         Route::group(array('before' => 'sentry'),function(){
 
-        Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
-        
+            Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
+            Route::get('user/settings',array('uses' => 'AccountController@index' ,'as'=>'user.settings'));
 
+            Route::get('user/edit/profile',array('uses' => 'AccountController@editprofile' ,'as'=>'user.editprofile'));
+            Route::put('user/edit/profile',array('uses' => 'AccountController@updateprofile' ,'as'=>'user.updateprofile'));
+            
         });
+        // End for sentry group
         
+        Route::get('mytemplate',function(){
+            return View::make('mytemplate');
+        });
+
 });
 
 /** OTHER PAGES THAT SHOULD NOT BE LOCALIZED **/
