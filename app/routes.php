@@ -35,21 +35,32 @@
         // Actiave Route Controller
         Route::get('user/activate/{userId}/{activationCode}', 'AuthController@getActivate');
         
-        // Actiave Route Controller
+        // Activation code Resend Controller
         Route::get('user/resend',  'AuthController@getResend');
         Route::post('user/resend', 'AuthController@postResend');
-
         
+        // Activate Reset Password
+        Route::get('user/resetpassword',  array('uses' => 'AuthController@getResetpassword' , 'as' => 'user.resetpass'));
+        Route::post('user/resetpassword', array('uses' => 'AuthController@postResetpassword'));
 
+        // Reset New Password link
+        Route::get('user/reset/{userId}/{resetCode}', 'AuthController@getReset');
+        
+        // Facebook APi 
+        Route::get('login/fb', array('uses' => 'AuthController@getfblogin' , 'as' => 'user.fblogin'));
+        Route::get('login/fb/callback', array('uses' => 'AuthController@checkfblogin' , 'as' => 'user.checkfblogin'));
 
         // ADD ROUTE FOR AUTHENCIATED USER INSIDE THIS group
         Route::group(array('before' => 'sentry'),function(){
 
             Route::get('user/profile', array('uses' => 'AuthController@profile' , 'as' => 'user.profile'));
-            Route::get('user/settings',array('uses' => 'AccountController@index' ,'as'=>'user.settings'));
+            Route::get('user/settings', array('uses' => 'AccountController@index' ,'as'=>'user.settings'));
 
-            Route::get('user/edit/profile',array('uses' => 'AccountController@editprofile' ,'as'=>'user.editprofile'));
-            Route::put('user/edit/profile',array('uses' => 'AccountController@updateprofile' ,'as'=>'user.updateprofile'));
+            Route::get('user/edit/profile', array('uses' => 'AccountController@editprofile' ,'as'=>'user.editprofile'));
+            Route::put('user/edit/profile', array('uses' => 'AccountController@updateprofile' ,'as'=>'user.updateprofile'));
+            
+            Route::get('user/editpassword', array('uses' => 'AccountController@editpass' ,'as'=>'user.editpass'));
+            Route::put('user/editpassword', array('uses' => 'AccountController@updatepass' ,'as'=>'user.updatepass'));
             
         });
         // End for sentry group

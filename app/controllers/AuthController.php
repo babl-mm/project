@@ -13,6 +13,137 @@ class AuthController extends \BaseController {
 		// Enable the Throttling Feature
 		$throttleProvider->enable();
 	}
+
+		/**
+	 * Display a listing of the resource.
+	 *
+	 * @return Response
+	 */
+	public function getfblogin()
+	{
+		
+		 $facebook = new Facebook(Config::get('facebook'));
+            $params = array(
+                'redirect_uri' => url('/login/fb/callback'),
+                'scope' => 'email',
+            );
+            return Redirect::to($facebook->getLoginUrl($params));
+	}
+	/* Display a listing of the resource.
+	 *
+	 * @return Response
+	 */
+	public function checkfblogin()
+	{
+		 	$code = Input::get('code');
+            if (strlen($code) == 0) 
+            {  
+	            Session::flash('error', 'There was an error communicating with Facebook.' );
+				return Redirect::to('user/login');
+            }
+            $facebook = new Facebook(Config::get('facebook'));
+            $uid = $facebook->getUser();
+         
+            if ($uid == 0) 
+            {  
+	            Session::flash('error', 'There was an error.' );
+				return Redirect::to('user/login');
+            }
+          
+            $me = $facebook->api('/me');
+
+            $profile = Profile::where('uid','=',$uid)->first();
+
+            if(empty($profile))
+            {	
+            	$mePassword = $this->_generatePassword(8,8);
+
+            	$credentials = array(
+				 'email' 		=>  $me['email'],
+				 'password' 	=>  $mePassword,
+				 'first_name' 	=>  $me['first_name'],
+				 'last_name'	=>  $me['last_name'],
+				 'gender'		=>  $me['gender'],
+				 'dob'			=>  '1-1',
+				 'imageurl' 	=> 'https://graph.facebook.com/'.$me['username'].'/picture?type=normal'	
+			   );
+            	try
+					{
+					    // Create the username
+					    $user = Sentry::createUser($credentials);
+					    $activationCode = $user->GetActivationCode();
+					   
+					    // Attempt user activation
+					    if ($user->attemptActivation($activationCode))
+					    {
+					  			 // User activation passed
+						    	//Add this person to the user group. 
+						    	$userGroup = Sentry::getGroupProvider()->findById(1);
+				    			$user->addGroup($userGroup);
+
+								$profile = new Profile;
+								$profile->uid = $uid;
+								$profile->username = $me['username'];
+								$profile->user_id = $user->id; 
+								$profile->access_token = $facebook->getAccessToken();
+						    	$profile->save();
+								
+								// Log the user in
+								Sentry::login($user, false);
+								return Redirect::to('user/profile');
+					    }
+								       
+					}
+					catch (Cartalyst\Sentry\Users\LoginRequiredException $e)
+					{
+					 
+					    Session::flash('error', 'Login field is required.' );
+						return Redirect::to('user/login');
+					}
+					catch (Cartalyst\Sentry\Users\PasswordRequiredException $e)
+					{
+					   
+					    Session::flash('error', 'Password field is required' );
+						return Redirect::to('user/login');
+					}
+					catch (Cartalyst\Sentry\Users\UserExistsException $e)
+					{
+					    
+					   	Session::flash('error', 'User with login already exists.' );
+						return Redirect::to('user/login');
+					}
+					catch (Cartalyst\Sentry\Users\LoginRequiredException $e)
+					{
+					  	Session::flash('error', 'Login field is required.' );
+					    return Redirect::to('user/login');
+					}
+					catch (Cartalyst\Sentry\Users\UserNotActivatedException $e)
+					{
+					 	Session::flash('error', 'User not activated.' );
+					    return Redirect::to('user/login');
+					}
+					catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+					{
+					   
+					     Session::flash('error', 'User not found.' );
+					    return Redirect::to('user/login');
+					}
+
+            }
+
+         
+			else{
+						$profile->access_token = $facebook->getAccessToken();
+				    	$profile->save();
+
+						 $user = Sentry::findUserById($profile->user_id);
+						 Sentry::login($user, false);
+						return Redirect::to('user/profile');
+				}
+       	
+
+		
+	}
 	/**
 	 * Display a listing of the resource.
 	 *
@@ -37,8 +168,8 @@ class AuthController extends \BaseController {
 			'password' => Input::get('password')
 		);
 		$rules = array(
-			'email' => 'required|min:8',
-			'password' => 'required|min:3'
+			'email' => 'required|Between:3,64|Email',
+			'password' => 'required|AlphaNum|Between:4,26'
 		);
 
 		$validator = Validator::make($credentials, $rules);	
@@ -50,33 +181,33 @@ class AuthController extends \BaseController {
 		else
 		{
 			// If you're using our Eloquent models (which we ship with Sentry by default)
-			$phoneModelInstance = Sentry::getUserProvider()->getEmptyUser();
+			// $phoneModelInstance = Sentry::getUserProvider()->getEmptyUser();
 
-			// Get User By Eloquent Models By Emailmodelinstance
-			$phoneUser = $phoneModelInstance->where('phoneno', '=', Input::get('email'))->first();
+			// // Get User By Eloquent Models By Emailmodelinstance
+			// $phoneUser = $phoneModelInstance->where('phoneno', '=', Input::get('email'))->first();
 			
-			if($phoneUser)
-			{
-				$credentials =array(
-					'email' => $phoneUser->email,
-					'password' => Input::get('password')
-					);
-			}
+			// if($phoneUser)
+			// {
+			// 	$credentials =array(
+			// 		'email' => $phoneUser->email,
+			// 		'password' => Input::get('password')
+			// 		);
+			// }
 
 			try 
 			{
 				$user =	Sentry::authenticate($credentials, false);
-				// if($user)
-				// {
+				if($user)
+				{
 					if($user->hasAccess('admin'))
 					{
-						return Redirect::to('/');
+						return Redirect::to('admin');
 					}
 					else
 					{
 						return Redirect::to('user/profile');
 					}
-				// }
+				}
 			} 
 			catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
 			{
@@ -180,7 +311,7 @@ class AuthController extends \BaseController {
 			 'lastname'		=> 'Required',
 			 'dob_day' 		=> 'Required|in:'.implode(',', $myday),
 			 'dob_month' 	=> 'Required|in:1,2,3,4,5,6,7,8,9,10,11,12',
-			 'phone' 		=> 'Required|Numeric',
+		  // 'phone' 		=> 'Required|Numeric',
 			 'address' 		=> 'Required',
 			 'gender' 		=> 'Required',
 			 'city' 		=> 'Required'
@@ -207,7 +338,7 @@ class AuthController extends \BaseController {
 				 'address' 		=> Input::get('address') ,
 				 'gender' 		=> Input::get('gender'),
 				 'city' 		=> Input::get('city') ,
-				 'imageurl' 	=> 'img/profile/sample_profile.jpg'	
+				 'imageurl' 	=> URL::asset('img/profile/sample_profile.jpg')
 			   );
 
 				$user = Sentry::register($credentials);
@@ -274,13 +405,108 @@ class AuthController extends \BaseController {
 		    Session::flash('error', 'User does not exist.');
 			return Redirect::to('user/login');
 		}
-		catch (Cartalyst\SEntry\Users\UserAlreadyActivatedException $e)
+		catch (Cartalyst\Sentry\Users\UserAlreadyActivatedException $e)
 		{
 		    Session::flash('error', 'You have already activated this account.');
 			return Redirect::to('user/login');
 		}
 	}
 
+	/**
+	 * Forgot Password / Reset
+	 */
+	public function getResetpassword() {
+		// Show the change password
+		return View::make('user.reset');
+	}
+
+	public function postResetpassword () {
+		// Gather Sanitized Input
+		$input = array(
+			'email' => Input::get('email')
+			);
+
+		// Set Validation Rules
+		$rules = array (
+			'email' => 'required|min:4|max:32|email'
+			);
+
+		//Run input validation
+		$v = Validator::make($input, $rules);
+
+		if ($v->fails())
+		{
+			// Validation has failed
+			return Redirect::to('user/resetpassword')->withErrors($v)->withInput();
+		}
+		else 
+		{
+			try
+			{
+			    $user = Sentry::getUserProvider()->findByLogin($input['email']);
+			    $data['resetCode'] = $user->getResetPasswordCode();
+			    $data['userId'] = $user->getId();
+			    $data['email'] = $input['email'];
+
+			    // Email the reset code to the user
+				Mail::send('emails.auth.reset', $data, function($mail) use($data)
+				{
+				    $mail->to($data['email'])->subject('Password Reset Confirmation | Beeticket Group');
+				});
+
+				Session::flash('success', 'Check your email for password reset information.');
+			    return Redirect::to('user/login');
+
+			}
+			catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+			{
+			    echo 'User does not exist';
+			}
+		}
+
+	}
+	/**
+	 * Reset User's password
+	 */
+	public function getReset($userId = null, $resetCode = null) {
+		try
+		{
+		    // Find the user
+		    $user = Sentry::getUserProvider()->findById($userId);
+		    $newPassword = $this->_generatePassword(8,8);
+
+		    // Attempt to reset the user password
+		    if ($user->attemptResetPassword($resetCode, $newPassword))
+		    {
+		        // Password reset passed
+		        // 
+		        // Email the reset code to the user
+
+			    //Prepare New Password body
+			    $data['newPassword'] = $newPassword;
+			    $data['email'] = $user->getLogin();
+
+			    Mail::send('emails.auth.newpassword', $data, function($m) use($data)
+				{
+				    $m->to($data['email'])->subject('New Password Information | Beeticket Group');
+				});
+
+				Session::flash('success', 'Your password has been changed. Check your email for the new password.');
+			    return Redirect::to('user/login');
+		        
+		    }
+		    else
+		    {
+		        // Password reset failed
+		    	Session::flash('error', 'There was a problem.  Please contact the system administrator.');
+			    return Redirect::to('user/resetpassword');
+		    }
+		}
+		catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+		{
+		    echo 'User does not exist.';
+		}
+	}
 		/**
 	 * Show the 'Resend Activation' Form
 	 * @return View
@@ -363,5 +589,37 @@ class AuthController extends \BaseController {
 		}
 
 
+	}
+	/*************** 
+		Generate Password
+	*********************************/
+	private function _generatePassword($length=9, $strength=4) {
+		$vowels = 'aeiouy';
+		$consonants = 'bcdfghjklmnpqrstvwxz';
+		if ($strength & 1) {
+			$consonants .= 'BCDFGHJKLMNPQRSTVWXZ';
+		}
+		if ($strength & 2) {
+			$vowels .= "AEIOUY";
+		}
+		if ($strength & 4) {
+			$consonants .= '23456789';
+		}
+		if ($strength & 8) {
+			$consonants .= '@#$%';
+		}
+	 
+		$password = '';
+		$alt = time() % 2;
+		for ($i = 0; $i < $length; $i++) {
+			if ($alt == 1) {
+				$password .= $consonants[(rand() % strlen($consonants))];
+				$alt = 0;
+			} else {
+				$password .= $vowels[(rand() % strlen($vowels))];
+				$alt = 1;
+			}
+		}
+		return $password;
 	}
 }

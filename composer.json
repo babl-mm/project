@@ -8,8 +8,10 @@
 		"way/generators": "dev-master",
 		"cartalyst/sentry": "2.0.*",
 		"mcamara/laravel-localization": "dev-master",
-		"intervention/image": "dev-master"
+		"intervention/image": "dev-master",
+		"facebook/php-sdk": "dev-master"
 	},
+
 	"minimum-stability" : "dev",
 	"autoload": {
 		"classmap": [

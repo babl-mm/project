@@ -18,12 +18,13 @@
               {{ Form::password('password', array('class' =>'form-control','placeholder' => 'Password')) }}
           </div>
       
-          <p><a href="#">{{ trans('memberlogin.forgetpass')}}</a></p>
+          <p><a href="{{ URL::route('user.resetpass')}}">{{ trans('memberlogin.forgetpass')}}</a></p>
           {{ Form::submit(trans('memberlogin.login'),array('class' =>'btn btn-large btn-lg btn-block btn-info'))}}
 
-          <br>          
-          <button type="button" class="btn btn-primary btn-lg btn-block" id="btn_fb">
-          <img src="{{ asset('img/ico_facebook.png')}}">{{ trans('memberlogin.signinfb')}}</button>
+          <br>        
+
+          <a href="{{ URL::route('user.fblogin')}}" class="btn btn-primary btn-lg btn-block" id="btn_fb">
+          <img src="{{ asset('img/ico_facebook.png')}}">{{ trans('memberlogin.signinfb')}}</a>
                     
           <a href="{{ URL::to('user/register')}}" class="btn btn-default btn-lg btn-block">{{ trans('memberlogin.createnewacc')}}</a>
           <p><a href="#">{{ trans('memberlogin.contactus')}}</a></p>      

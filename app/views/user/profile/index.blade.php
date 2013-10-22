@@ -19,13 +19,13 @@
 	   </div>
 	   <div class="user-profile">
 	    	<div class="profile-pic">
-	    		<img class="img-circle" width="81px" height="82" src="{{asset($user['imageurl'])}}">
+	    		<img class="img-circle" width="81px" height="82px" src="{{$user['imageurl']}}">
 	    	</div>
 	    	<div class="profile-detail">
 	 	
 		    	<h3 class="profile-name">{{ $user['first_name']}}  {{ $user['last_name']}} </h3>
-		       	<span>Phone:: {{ $user['phoneno']}} </span> <br/>
-		       	<span>Email:: {{ $user['email']}} </span>
+		       	<span>Gender :: {{ ucwords($user['gender'])}} </span> <br/>
+		       	<span>Email :: {{ $user['email']}} </span>
 	       </div>
 	    </div>
 	   <div class="user-access-tabs">

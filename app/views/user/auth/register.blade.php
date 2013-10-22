@@ -31,8 +31,7 @@
                   <label for="Last Name">Last name</label>
                    {{ Form::text('lastname', Input::old('lastname', ''), array('class' =>'form-control','placeholder' => 'Last name')) }}
                   
-                   <label for="Phone no">Phone no</label>
-                   {{ Form::text('phone', Input::old('phone', ''), array('class' =>'form-control','placeholder' => 'Phone no')) }}
+                 
                   
                    <label for="">Date of Birth</label>
               
